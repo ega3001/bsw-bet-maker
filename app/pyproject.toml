@@ -10,10 +10,22 @@ python = "^3.12"
 fastapi = "^0.111.1"
 sqlalchemy = "^2.0.31"
 alembic = "^1.13.2"
+pydantic = "^2.8.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.0"
 black = "^24.4.2"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+
+[tool.mypy]
+ignore_missing_imports = true
+show_column_numbers = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
 
 [build-system]
 requires = ["poetry-core"]
