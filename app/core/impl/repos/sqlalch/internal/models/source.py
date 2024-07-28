@@ -38,10 +38,6 @@ class Bet(BaseModel):
         sa.ForeignKey("matches.id"), nullable=False
     )
 
-    match: so.WriteOnlyMapped[Optional["Match"]] = so.relationship(
-        back_populates="bets"
-    )
-
 
 class Match(BaseModel):
     __tablename__: str = "matches"
@@ -56,6 +52,4 @@ class Match(BaseModel):
     status: so.Mapped[MatchStatus] = so.mapped_column(ENUM(MatchStatus), nullable=False)
     result: so.Mapped[MatchResult] = so.mapped_column(ENUM(MatchResult), nullable=False)
 
-    bets: so.WriteOnlyMapped[Optional[List["Bet"]]] = so.relationship(
-        back_populates="match"
-    )
+    bets: so.WriteOnlyMapped[Optional[List["Bet"]]] = so.relationship()
