@@ -11,7 +11,9 @@ def betModel2Entity(model: models.Bet) -> entities.Bet:
         updated=model.updated,
         predict=DEnums.MatchResult(model.predict),
         status=DEnums.BetStatus(model.status),
-        amount=Money(model.amount, Currenncy=DEnums.CurrencyType(model.currency)),
+        amount=Money(
+            amount=model.amount, Currenncy=DEnums.CurrencyType(model.currency)
+        ),
         match_id=model.match_id,
     )
 

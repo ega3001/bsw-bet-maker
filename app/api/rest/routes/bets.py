@@ -1,6 +1,5 @@
 import uuid
 import logging
-from dataclasses import dataclass
 from enum import IntEnum
 from typing import List
 
@@ -47,27 +46,14 @@ class RequestCreate(BaseModel):
     amount: vals.Money
 
 
-@dataclass
-class RequestContext:
-    session: AsyncSession | None = None
-    betRepo: repos.BetRepository | None = None
-    matchRepo: repos.MatchRepository | None = None
+def prepareBetRepo(session: AsyncSession = Depends(get_db)) -> SqlAlchemyBetRepository:
+    return SqlAlchemyBetRepository(session)
 
 
-def prepareSession(session: AsyncSession = Depends(get_db)) -> RequestContext:
-    return RequestContext(session=session)
-
-
-def prepareBetRepo(session: AsyncSession = Depends(get_db)) -> RequestContext:
-    return RequestContext(session=session, betRepo=SqlAlchemyBetRepository(session))
-
-
-def prepareBetMatchRepo(session: AsyncSession = Depends(get_db)) -> RequestContext:
-    return RequestContext(
-        session=session,
-        betRepo=SqlAlchemyBetRepository(session),
-        matchRepo=SqlAlchemyMatchRepository(session),
-    )
+def prepareBetMatchRepo(
+    session: AsyncSession = Depends(get_db),
+) -> SqlAlchemyMatchRepository:
+    return SqlAlchemyMatchRepository(session)
 
 
 @BetsRouter.get(
@@ -78,11 +64,9 @@ def prepareBetMatchRepo(session: AsyncSession = Depends(get_db)) -> RequestConte
 )
 async def getAll(
     session: AsyncSession = Depends(get_db),
-    context: RequestContext = Depends(prepareBetRepo),
+    betRepo: repos.BetRepository = Depends(prepareBetRepo),
 ) -> ResponseList:
-    bets: List[entities.Bet] = await handlers.getAllBets(
-        context.session, context.betRepo
-    )
+    bets: List[entities.Bet] = await handlers.getAllBets(session, betRepo)
     return ResponseList(result=bets)
 
 
@@ -94,11 +78,12 @@ async def getAll(
 )
 async def createOne(
     request: RequestCreate = Depends(),
-    context: RequestContext = Depends(prepareBetRepo),
+    session: AsyncSession = Depends(get_db),
+    betRepo: repos.BetRepository = Depends(prepareBetRepo),
 ) -> ResponseOne:
     bet = await handlers.bet(
-        context.session,
-        context.betRepo,
+        session,
+        betRepo,
         request.match_id,
         request.predict,
         request.amount,
